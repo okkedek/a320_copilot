@@ -45,12 +45,11 @@ const PHASE = {
     }
 }
 const CHIME_ALT = 10200;
-
 const api = new MSFS_API();
+
 let fl_p = 0;
 let alt_p = 0;
 let phase_alt_p = 0;
-let at_p = false; // auto  throttle
 let phase_info = {
     phase: PHASE.INIT,
     next_met: 0
@@ -74,21 +73,32 @@ async function run(handle) {
 
     console.log("Init monitors");
     api.schedule((v) => monitor_alt(v.INDICATED_ALTITUDE), 1000, 'INDICATED_ALTITUDE')
-    api.schedule(({
-                      AIRSPEED_INDICATED: spd,
-                      INDICATED_ALTITUDE: alt
-                  }) => monitor_phase(spd, alt), 1000, 'INDICATED_ALTITUDE', 'AIRSPEED_INDICATED')
+    api.schedule(
+        ({
+             AIRSPEED_INDICATED: spd,
+             INDICATED_ALTITUDE: alt
+         }) => monitor_phase(spd, alt),
+        1000,
+        'INDICATED_ALTITUDE', 'AIRSPEED_INDICATED'
+    );
 
-    emitter.on('phase-change', monitor_phase_change);
-    // api.on(SystemEvents.POSITION_CHANGED, () => {});
-    // api.on(SystemEvents.AUTO_THROTTLE_DISCONNECT, () => {});
-    // api.schedule(monitor_data, 1000, 'NAV NAME');
+    emitter.on('phase-change', on_phase_change);
 }
 
 async function set_initial_phase() {
     let {AIRSPEED_INDICATED: spd, INDICATED_ALTITUDE: alt} = await api.get('INDICATED_ALTITUDE', 'AIRSPEED_INDICATED');
     phase_info.phase = initial_phase(spd, alt);
     console.log('Initial phase:', phase_info.phase.label);
+}
+
+function initial_phase(spd, alt) {
+    for (let phase in PHASE) {
+        if (meets_phase(PHASE[phase], spd, alt)) {
+            return PHASE[phase];
+        }
+    }
+
+    return PHASE.INIT;
 }
 
 async function error(e) {
@@ -117,7 +127,6 @@ async function monitor_alt(alt) {
     }
 
     if (alt_c < CHIME_ALT && alt_p > CHIME_ALT) {
-        // play chime when plane passes altitude
         alt_p = alt_c;
         console.log('10000ft announcement...');
         await playAudioFile('./audio/10000.wav');
@@ -126,23 +135,7 @@ async function monitor_alt(alt) {
     fl_p = fl_c;
 }
 
-async function monitor_phase_change(phase) {
-    console.log('Phase:', phase.label);
-    switch (phase) {
-        case PHASE.CRUISE:
-            await playAudioFile('./audio/cruise.wav'); //seatbelt lights, descent and arrival
-            break;
-        case PHASE.DESCENT:
-            await playAudioFile('./audio/descent.wav');
-            break;
-        case PHASE.APPROACH:
-            await playAudioFile('./audio/approach.wav');
-            break;
-    }
-}
-
 async function monitor_phase(spd, alt) {
-
     if (!meets_phase(phase_info.phase.next(), spd, alt)) return;
     if (phase_info.next_met++ > 2) {
         phase_info.phase = phase_info.phase.next();
@@ -151,13 +144,19 @@ async function monitor_phase(spd, alt) {
     }
 }
 
-function initial_phase(spd, alt) {
-    for (let phase in PHASE) {
-        if (meets_phase(PHASE[phase], spd, alt)) {
-            return PHASE[phase];
-        }
+async function on_phase_change(phase) {
+    console.log('Phase:', phase.label);
+    switch (phase) {
+        case PHASE.CRUISE:
+            await playAudioFile('./audio/cruise.wav');
+            break;
+        case PHASE.DESCENT:
+            await playAudioFile('./audio/descent.wav');
+            break;
+        case PHASE.APPROACH:
+            await playAudioFile('./audio/approach.wav');
+            break;
     }
-    console.log('Could not match flight phase');
 }
 
 function meets_phase(phase, spd, alt) {
@@ -173,8 +172,8 @@ function meets_phase(phase, spd, alt) {
             met = spd > 120 && alt > phase_alt_p;
             phase_alt_p = alt;
             return met;
-        case PHASE.CRUISE: // add minimum altitude
-            met = spd > 260 && Math.abs(alt - phase_alt_p) < 10;
+        case PHASE.CRUISE:
+            met = alt > 18500 && spd > 260 && Math.abs(alt - phase_alt_p) < 10;
             phase_alt_p = alt;
             return met;
         case PHASE.DESCENT:
