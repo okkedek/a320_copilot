@@ -23,17 +23,21 @@ The copilot voices the following reminders:
   - set autobreak,
   - and alert the cabin-crew.
 
-# Run
+
+# Install
 ```
 npm install
+```
+
+# Run
+```
 npm start
 ```
 or use the batch file:
 ``` 
 copilot.bat
 ```
-
-Then start the MS FS2020 simulator. Or start the simulator first and the co-pilot later.
+Then start the simulator. It's also possible to start the co-pilot mid-flight.
 
 # Attributions
 

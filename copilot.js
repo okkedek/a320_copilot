@@ -48,6 +48,7 @@ const PHASE = {
 const CHIME_ALT = 10200;
 const api = new MSFS_API();
 
+let conn_retried = false;
 let fl_p = 0;
 let alt_p = 0;
 let phase_alt_p = 0;
@@ -55,13 +56,13 @@ let phase_info = {
     phase: PHASE.INIT,
     next_met: 0
 };
-
 api.connect({
     retries: Infinity,
     retryInterval: 5,
     autoReconnect: true,
     onConnect: (handle) => run(handle),
     onRetry: (_, interval) => {
+        conn_retried = true;
         console.log(`Waiting for sim: retrying in ${interval} seconds.`);
     },
     onException: (e) => error(e),
@@ -69,6 +70,10 @@ api.connect({
 
 async function run() {
     console.log(`Connected to MSFS.`);
+    if (conn_retried) {
+        console.log('Waiting 30s to let MSFS load...')
+        await new Promise(resolve => setTimeout(resolve, 30000));
+    }
     await sound.play(path.resolve('audio/connected.wav'));
 
     await set_initial_phase();
