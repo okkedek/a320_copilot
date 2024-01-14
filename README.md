@@ -33,7 +33,7 @@ or use the batch file:
 copilot.bat
 ```
 
-Then start the MS FS2020 simulator. Or start the simulator first and the co-pilote later.
+Then start the MS FS2020 simulator. Or start the simulator first and the co-pilot later.
 
 # Attributions
 
