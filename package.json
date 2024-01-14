@@ -4,8 +4,8 @@
     "start": "node copilot.js"
   },
   "dependencies": {
-    "audic": "^3.0.2",
     "msfs-simconnect-api-wrapper": "^4.3.0",
+    "sound-play": "^1.1.0",
     "tiny-emitter": "^2.1.0"
   }
 }

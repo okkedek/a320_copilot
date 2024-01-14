@@ -1,6 +1,7 @@
-import {SystemEvents, MSFS_API} from "msfs-simconnect-api-wrapper/msfs-api.js";
-import {playAudioFile} from 'audic';
+import {MSFS_API} from "msfs-simconnect-api-wrapper/msfs-api.js";
 import emitter from 'tiny-emitter/instance.js';
+import sound from 'sound-play/src/index.js';
+import path from 'path';
 
 const PHASE = {
     INIT: {
@@ -66,8 +67,9 @@ api.connect({
     onException: (e) => error(e),
 });
 
-async function run(handle) {
+async function run() {
     console.log(`Connected to MSFS.`);
+    await sound.play(path.resolve('audio/connected.wav'));
 
     await set_initial_phase();
 
@@ -129,7 +131,7 @@ async function monitor_alt(alt) {
     if (alt_c < CHIME_ALT && alt_p > CHIME_ALT) {
         alt_p = alt_c;
         console.log('10000ft announcement...');
-        await playAudioFile('./audio/10000.wav');
+        await sound.play(path.resolve('audio/10000.wav'));
     }
     alt_p = alt_c;
     fl_p = fl_c;
@@ -148,13 +150,13 @@ async function on_phase_change(phase) {
     console.log('Phase:', phase.label);
     switch (phase) {
         case PHASE.CRUISE:
-            await playAudioFile('./audio/cruise.wav');
+            await sound.play(path.resolve('audio/cruise.wav'));
             break;
         case PHASE.DESCENT:
-            await playAudioFile('./audio/descent.wav');
+            await sound.play(path.resolve('audio/descent.wav'));
             break;
         case PHASE.APPROACH:
-            await playAudioFile('./audio/approach.wav');
+            await sound.play(path.resolve('audio/approach.wav'));
             break;
     }
 }
@@ -181,7 +183,7 @@ function meets_phase(phase, spd, alt) {
             phase_alt_p = alt;
             return met;
         case PHASE.APPROACH:
-            met = spd < 155 && alt < phase_alt_p;
+            met = spd < 165 && alt < phase_alt_p;
             phase_alt_p = alt;
             return met;
         case PHASE.LANDING:
