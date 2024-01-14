@@ -69,13 +69,7 @@ api.connect({
 
 async function run(handle) {
     console.log(`Connected to MSFS.`);
-    await playAudioFile('./audio/connected.wav');
-    await playAudioFile('./audio/10000.wav');
-    await playAudioFile('./audio/approach.wav');
-    await playAudioFile('./audio/cruise.wav');
-    await playAudioFile('./audio/descent.wav');
 
-    //PLANE_ALTITUDE, INDICATED_ALTITUDE, PRESSURE_ALTITUDE
     await set_initial_phase();
 
     console.log("Init monitors");
