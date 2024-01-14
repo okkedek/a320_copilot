@@ -1,0 +1,12 @@
+{
+  "type": "module",
+  "scripts": {
+    "start": "node monitor.js"
+  },
+  "dependencies": {
+    "audic": "^3.0.2",
+    "msfs-simconnect-api-wrapper": "^4.3.0",
+    "node-simconnect": "^3.6.1",
+    "tiny-emitter": "^2.1.0"
+  }
+}
