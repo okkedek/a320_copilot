@@ -62,7 +62,7 @@ api.connect({
     autoReconnect: true,
     onConnect: (handle) => run(handle),
     onRetry: (_, interval) => {
-        console.log(`Connection failed: retrying in ${interval} seconds.`);
+        console.log(`Waiting for sim: retrying in ${interval} seconds.`);
     },
     onException: (e) => error(e),
 });
@@ -105,10 +105,7 @@ function initial_phase(spd, alt) {
 
 async function error(e) {
     console.log(e)
-    if (e === 'SIMCONNECT_EXCEPTION_UNRECOGNIZED_ID') {
-        await new Promise(r => setTimeout(r, 2000));
-        void run();
-    }
+    await sound.play(path.resolve('audio/error.wav'));
 }
 
 async function monitor_alt(alt) {
