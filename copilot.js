@@ -45,7 +45,8 @@ const PHASE = {
         next: () => PHASE.PARKED,
     }
 }
-const CHIME_ALT = 10200;
+const CHIME_DES_ALT = 10500;
+const CHIME_CLB_ALT = 9000;
 const api = new MSFS_API();
 
 let conn_retried = false;
@@ -71,8 +72,8 @@ api.connect({
 async function run() {
     console.log(`Connected to MSFS.`);
     if (conn_retried) {
-        console.log('Waiting 30s to let MSFS load...')
-        await new Promise(resolve => setTimeout(resolve, 30000));
+        console.log('Waiting 60s to let MSFS load...')
+        await new Promise(resolve => setTimeout(resolve, 60000));
     }
     await sound.play(path.resolve('audio/connected.wav'));
 
@@ -130,10 +131,17 @@ async function monitor_alt(alt) {
         console.log('Altitude: ', fl_c * 1000);
     }
 
-    if (alt_c < CHIME_ALT && alt_p > CHIME_ALT) {
+    if (alt_c > CHIME_CLB_ALT && alt_p < CHIME_CLB_ALT) {
         alt_p = alt_c;
-        console.log('10000ft announcement...');
-        await sound.play(path.resolve('audio/10000.wav'));
+        console.log('10000ft announcement climbing...');
+        await sound.play(path.resolve('audio/10000_clb.wav'));
+    }
+
+
+    if (alt_c < CHIME_DES_ALT && alt_p > CHIME_DES_ALT) {
+        alt_p = alt_c;
+        console.log('10000ft announcement descending...');
+        await sound.play(path.resolve('audio/10000_des.wav'));
     }
     alt_p = alt_c;
     fl_p = fl_c;
@@ -177,11 +185,11 @@ function meets_phase(phase, spd, alt) {
             phase_alt_p = alt;
             return met;
         case PHASE.CRUISE:
-            met = alt > 18500 && spd > 260 && Math.abs(alt - phase_alt_p) < 10;
+            met = alt > 18500 && spd > 200 && Math.abs(alt - phase_alt_p) < 10;
             phase_alt_p = alt;
             return met;
         case PHASE.DESCENT:
-            met = spd > 250 && (alt - phase_alt_p) < -5;
+            met = spd > 200 && (alt - phase_alt_p) < -5;
             phase_alt_p = alt;
             return met;
         case PHASE.APPROACH:
